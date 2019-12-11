@@ -2,10 +2,10 @@
 * ImageSizeFetcher
 * Finds the type/size of an image given its URL by fetching as little data as needed
 *
-* Created by:	Daniele Margutti
-* Email:		hello@danielemargutti.com
-* Web:			http://www.danielemargutti.com
-* Twitter:		@danielemargutti
+* Created by:    Daniele Margutti
+* Email:        hello@danielemargutti.com
+* Web:            http://www.danielemargutti.com
+* Twitter:        @danielemargutti
 *
 * Copyright © 2018 Daniele Margutti
 *
@@ -46,6 +46,9 @@ internal class ImageSizeFetcherOp: Operation {
 	
 	/// Partial data
 	private(set) var receivedData = Data()
+    
+    /// Has parsed flag
+    private var parsed = false
 	
 	/// URL of the operation
 	var url: URL? {
@@ -87,6 +90,7 @@ internal class ImageSizeFetcherOp: Operation {
 		do {
 			if let result = try ImageSizeFetcherParser(sourceURL: self.url!, data) {
 				self.callback?(nil,result)
+                self.parsed = true
 				self.cancel()
 			}
 			// nothing received, continue accumulating data
@@ -98,8 +102,10 @@ internal class ImageSizeFetcherOp: Operation {
 	
 	func onEndWithError(_ error: Error?) {
 		// download has failed, return to callback with the description of the error
-		self.callback?(ImageParserErrors.network(error),nil)
-		self.cancel()
+        if !self.parsed {
+            self.callback?(ImageParserErrors.network(error),nil)
+        }
+        self.cancel()
 	}
 	
 }
